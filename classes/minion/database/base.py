@@ -1,8 +1,6 @@
 
 # Database connection wraper/helper.
 
-# Makes use of sqlalchemy
-
 # This class provides connection instance management via Database Drivers, as
 # well as quoting, escaping and other related functions.
 
