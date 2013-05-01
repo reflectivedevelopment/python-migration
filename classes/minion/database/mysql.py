@@ -4,7 +4,7 @@ import sqlalchemy
 
 # Makes use of sqlalchemy
 
-class minion_database_sqlalchemy(minion_database_base):
+class minion_database_mysql(minion_database_base):
 
     # Database in use by each connection
     _current_databases = dict()
@@ -14,6 +14,9 @@ class minion_database_sqlalchemy(minion_database_base):
 
     # Idenetifier for this connection within the python driver
     _connection_id = None
+
+    # Identify the charset
+    _charset = None
 
     # MySQL uses a backtick for identifiers
     _identifier = '`'
@@ -31,20 +34,18 @@ class minion_database_sqlalchemy(minion_database_base):
 #			Database_MySQL::$_set_names = ! function_exists('mysql_set_charset');
 #		}
 
-#		// Extract the connection parameters, adding required variabels
-#		extract($this->_config['connection'] + array(
-#			'database'   => '',
-#			'hostname'   => '',
-#			'username'   => '',
-#			'password'   => '',
-#			'persistent' => FALSE,
-#		));
+        database = self._config['database']
+        hostname = self._config['hostname']
+        username = self._config['username']
+        password = self._config['password']
+        persistent = self._config['persistent']
 
 #		// Prevent this information from showing up in traces
 #		unset($this->_config['connection']['username'], $this->_config['connection']['password']);
 
+#'mysql://root:@localhost/test'
         try:
-            self._connection = sqlalchemy.create_engine(hostname, username, password)
+            self._connection = sqlalchemy.create_engine('mysql://%s:%s@%s/%s' % (username, password, hostname, database), echo=False)
         except Exception as e:
             self._connection = None
 
@@ -52,8 +53,6 @@ class minion_database_sqlalchemy(minion_database_base):
 
 	#// \xFF is a better delimiter, but the Python driver uses underscore
         self._connection_id = hashlib.sha1('%s_%s_%s' % (hostname, username, password))
-
-        self._select_db(database)
 
         if self._charset is not None:
             pass
@@ -76,28 +75,6 @@ class minion_database_sqlalchemy(minion_database_base):
 #			mysql_query('SET '.implode(', ', $variables), $this->_connection);
 #		}
 #	}
-
-#	/**
-#	 * Select the database
-#	 *
-#	 * @param   string  $database Database
-#	 * @return  void
-#	 */
-    def _select_db(self, database):
-        raise NotImplementedError("TODO")
-#	protected function _select_db($database)
-#	{
-#		if ( ! mysql_select_db($database, $this->_connection))
-#		{
-#			// Unable to select database
-#			throw new Database_Exception(':error',
-#				array(':error' => mysql_error($this->_connection)),
-#				mysql_errno($this->_connection));
-#		}
-#
-#		Database_MySQL::$_current_databases[$this->_connection_id] = $database;
-#	}
-#
 
     def disconnect(self):
         status = True
