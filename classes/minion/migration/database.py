@@ -1,4 +1,6 @@
 
+from classes.minion.database.base import minion_database_base
+
 # Creates a disposable instance of the faux connection
 
 # param array Config for the underlying DB connection
@@ -13,7 +15,7 @@ def faux_instance(db_group, config):
 
     return minion_migration_database('__minion_faux', config)
 
-class minion_migration_database():
+class minion_migration_database(minion_database_base):
 
     # The query stack used to store queries
     # var array

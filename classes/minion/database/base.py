@@ -64,7 +64,7 @@ class minion_database_base():
     #
 
     # TODO verify that these names are what we actually want to use
-    def __contruct(self, name, config):
+    def __init__(self, name, config):
         # set the instance name
         self._instance = name
 
@@ -76,7 +76,7 @@ class minion_database_base():
 
         minion_database_base.instances[name] = self
 
-    def __destruct(self):
+    def __del__(self):
         self.disconnect()
 
     def connect(self):
