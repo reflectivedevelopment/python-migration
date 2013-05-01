@@ -161,27 +161,10 @@ class minion_database_mysql(minion_database_base):
 
         if type == minion_database_base.SELECT:
             return result
+        elif type == minion_database_base.INSERT:
+            return [result.lastrowid, result.rowcount]
         else:
-            raise NotImplementedError("TODO")
-	#	if ($type === Database::SELECT)
-	#	{
-	#		// Return an iterator of results
-	#		return new Database_MySQL_Result($result, $sql, $as_object, $params);
-	#	}
-	#	elseif ($type === Database::INSERT)
-	#	{
-	#		// Return a list of insert id and rows created
-	#		return array(
-	#			mysql_insert_id($this->_connection),
-	#			mysql_affected_rows($this->_connection),
-	#		);
-	#	}
-	#	else
-	#	{
-	#		// Return the number of rows affected
-	#		return mysql_affected_rows($this->_connection);
-	#	}
-	#}
+            return result.rowcount
 
 #	public function datatype($type)
 #	{
