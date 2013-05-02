@@ -1,6 +1,6 @@
 from classes.model.minion.migration import model_minion_migration as migration_model
 from classes.minion.migration.database import faux_instance
-from classes.minion.database.mysql import minion_database_mysql as database
+from classes.minion.database.base import instance as database
 
 #/**
 # * The migration manager is responsible for locating migration files, syncing
@@ -222,8 +222,7 @@ class minion_migration_manager():
     def _get_db_instance(self, db_group):
         # if this isn't a dry run then just use a normal database connection
         if not self._dry_run:
-            pass
-#            return database:instance(db_group)# TODO
+            return database(db_group)
 
         return faux_instance(db_group)
 

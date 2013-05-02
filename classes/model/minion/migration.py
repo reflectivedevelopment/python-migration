@@ -95,7 +95,7 @@ class model_minion_migration():
         if len(migration['description']) > 0:
             migration = '%s_%s' % (migration['timestamp'], migration['description'])
         else:
-            migration = '%s' $ migration['timestamp']
+            migration = '%s' % migration['timestamp']
 
         if len(group) > 0:
             migration = '%s.%s' % (group, migration)
