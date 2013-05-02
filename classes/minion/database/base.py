@@ -1,4 +1,31 @@
 
+# Get a singleton Database instance. If configruation is not specified,
+# it will be loaded from the database configuration file using the same
+# group as the name.
+
+# param string name instance name
+# param array config configuration parameters
+# return Database
+def instance(name = None, config = None):
+   if name is None:
+       name = minion_database_base.default
+
+   if not minion_database_base.instances.has_key(name):
+       if config is None:
+           import config.migration as default_conf
+           config = default_conf.conf()['connections'][name]
+       if not config.has_key('type'):
+           raise Exception("Database type not defined in configuration")
+
+       # Create database connection instance
+       try:
+           db_module = __import__( 'classes.minion.database.%s' % config['type'], fromlist=['classes.minion.database'])
+       except:
+           raise Exception("Unable to load database type.")
+       print dir(db_module)
+       return db_module.instance(name=name, config=config);
+
+
 # Database connection wraper/helper.
 
 # This class provides connection instance management via Database Drivers, as
@@ -18,32 +45,7 @@ class minion_database_base():
     # database instances
     instances = dict()
 
-    # Get a singleton Database instance. If configruation is not specified,
-    # it will be loaded from the database configuration file using the same
-    # group as the name.
-
-    # param string name instance name
-    # param array config configuration parameters
-    # return Database
-    def instance(name = None, config = None):
-       if name is None:
-           name = minion_database_base.default
-
-       if not minion_database_base.instances.has_key(name):
-           if config is None:
-#               config = #$config = Kohana::$config->load('database')->$name;         
-               raise Exception("No Default Config!")
-           if not config.has_key('type'):
-               raise Exception("Database type not defined in configuration")
-           
-           # Create database connection instance
-           # TODO
-           #// Create the database connection instance
-           #new $driver($name, $config);
-           #return Database::$instances[$name];
-
     # @var  string  the last query executed
-
     last_query = None
 
     # Character that is used to quote identifiers
@@ -57,9 +59,6 @@ class minion_database_base():
 
     # Configuration
     _config = None
-
-    # Stores the database configuration locally and name the instace.
-    #
 
     # TODO verify that these names are what we actually want to use
     def __init__(self, name, config):

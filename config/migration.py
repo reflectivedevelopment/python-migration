@@ -10,6 +10,7 @@ def conf():
                             'username':'root',
                             'password':'',
                             'persistent':False,
+                            'type':'mysql'
                             }
                       } 
 

@@ -2,6 +2,9 @@ from base import minion_database_base
 import hashlib
 import sqlalchemy
 
+def instance(name=None, config=None):
+    return minion_database_mysql(name=name, config=config)
+
 # Makes use of sqlalchemy
 
 class minion_database_mysql(minion_database_base):
