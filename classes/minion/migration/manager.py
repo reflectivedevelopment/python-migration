@@ -2,6 +2,8 @@ from classes.model.minion.migration import model_minion_migration as migration_m
 from classes.minion.migration.database import faux_instance
 from classes.minion.database.base import instance as database
 
+import collections
+
 #/**
 # * The migration manager is responsible for locating migration files, syncing
 # * them with the migrations table in the database and selecting any migrations
@@ -110,14 +112,14 @@ class minion_migration_manager():
     # * @param  array   Versions for specified groups
     # * @return array   Array of all migrations that were successfully applied
     # */
-#	public function run_migration($group = array(), $target = TRUE)
-#	{
-#		list($migrations, $is_up) = $this->_model->fetch_required_migrations($group, $target);
-#
-#		$method = $is_up ? 'up' : 'down';
-#
-#		foreach ($migrations as $migration)
-#		{
+    def run_migration(self, group={}, target=True):
+        (migrations, is_up) = self._model.fetch_required_migrations(group, target)
+
+        method = 'up' if is_up else 'down'
+
+        for migration in migrations:
+            # Config allows limiting how low you go. TODO
+#            if method == 'down' and migration['timestamp'] <= 
 #			if ($method == 'down' AND $migration['timestamp'] <= Kohana::$config->load('minion/migration')->lowest_migration)
 #			{
 #				Minion_CLI::write(
@@ -126,7 +128,10 @@ class minion_migration_manager():
 #				);
 #				return;
 #			}
-#
+
+            filename = self._model.get_filename_from_migration(migration)
+
+            print filename
 #			$filename  = $this->_model->get_filename_from_migration($migration);
 #
 #			if ( ! ($file  = Kohana::find_file('migrations', $filename, FALSE)))
@@ -225,13 +230,4 @@ class minion_migration_manager():
             return database(db_group)
 
         return faux_instance(db_group)
-
-#	protected function _get_db_instance($db_group)
-#	{
-#		// If this isn't a dry run then just use a normal database connection
-#		if ( ! $this->_dry_run)
-#			return Database::instance($db_group);
-#
-#		return Minion_Migration_Database::faux_instance($db_group);
-#	}
 

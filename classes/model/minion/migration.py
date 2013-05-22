@@ -11,7 +11,6 @@ class model_minion_migration():
     def __init__(self, db):
         self._db = db
 
-
     #/**
     # * Returns a list of migrations that are available in the filesystem
     # *
@@ -400,6 +399,7 @@ class model_minion_migration():
     # * @param mixed   Target version
     # */
     def fetch_required_migrations(self, group, target=True):
+        print dir(self._db)
         raise NotImplementedError("TODO")
 #	public function fetch_required_migrations(array $group, $target = TRUE)
 #	{
