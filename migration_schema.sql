@@ -1,4 +1,4 @@
-CREATE TABLE `migrations` (
+CREATE TABLE `minion_migrations` (
   `timestamp` varchar(14) NOT NULL,
   `description` varchar(100) NOT NULL,
   `group` varchar(100) NOT NULL,

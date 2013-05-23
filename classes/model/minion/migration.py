@@ -1,6 +1,8 @@
 import os
+from classes.minion.database.base import minion_database_base as database
 
 MIGRATION_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'migrations'))
+MIGRATION_SQL = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'migration_schema.sql'))
 
 class model_minion_migration():
 
@@ -136,19 +138,13 @@ class model_minion_migration():
     # * @return boolean
     # */
     def ensure_table_exists(self):
-        raise NotImplementedError("TODO")
-#	public function ensure_table_exists()
-#	{
-#		$query = $this->_db->query(Database::SELECT, "SHOW TABLES like '".$this->_table."'");
-#
-#		if ( ! count($query))
-#		{
-#			$sql = file_get_contents(Kohana::find_file('', 'minion_schema', 'sql'));
-#
-#			$this->_db->query(NULL, $sql);
-#		}
-#	}
+        query = self._db.query(database.SELECT, 'SHOW TABLES like \'%s\'' % self._table)
 
+        if query.rowcount <= 0:
+            sql = ''
+            with open(MIGRATION_SQL) as f:
+                sql = f.read()
+            self._db.query(None, sql);
 
     #/**
     # * Gets the status of all groups, whether they're in the db or not.

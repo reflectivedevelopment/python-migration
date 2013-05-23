@@ -2,8 +2,6 @@ from classes.model.minion.migration import model_minion_migration as migration_m
 from classes.minion.migration.database import faux_instance
 from classes.minion.database.base import instance as database
 
-import collections
-
 #/**
 # * The migration manager is responsible for locating migration files, syncing
 # * them with the migrations table in the database and selecting any migrations
@@ -181,8 +179,11 @@ class minion_migration_manager():
     # * @chainable
     # * @return Minion_Migration_Manager Chainable instance
     # */
-#	public function sync_migration_files()
-#	{
+    def sync_migration_files(self):
+        installed = self._model.fetch_all('id')
+
+        return self
+    
 #		// Get array of installed migrations with the id as key
 #		$installed = $this->_model->fetch_all('id');
 #

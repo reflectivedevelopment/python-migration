@@ -12,8 +12,12 @@ for r in response:
 
 import classes.minion.migration.manager as manager
 
-m = manager.minion_migration_manager(object)
+#m = manager.minion_migration_manager(object)
 
-m.run_migration();
+#m.run_migration();
 
+from classes.minion.task.migrations.run import minion_task_migrations_run
 
+task = minion_task_migrations_run()
+
+task.execute(config={'group': ',,test/,test2'})

@@ -7,23 +7,23 @@
 # param array config configuration parameters
 # return Database
 def instance(name = None, config = None):
-   if name is None:
-       name = minion_database_base.default
+    if name is None:
+        name = minion_database_base.default
 
-   if not minion_database_base.instances.has_key(name):
-       if config is None:
-           import config.migration as default_conf
-           config = default_conf.conf()['connections'][name]
-       if not config.has_key('type'):
-           raise Exception("Database type not defined in configuration")
+    if not minion_database_base.instances.has_key(name):
+        if config is None:
+            import config.migration as default_conf
+            config = default_conf.conf()['connections'][name]
+        if not config.has_key('type'):
+            raise Exception("Database type not defined in configuration")
 
-       # Create database connection instance
-       try:
-           db_module = __import__( 'classes.minion.database.%s' % config['type'], fromlist=['classes.minion.database'])
-       except:
-           raise Exception("Unable to load database type.")
-       print dir(db_module)
-       return db_module.instance(name=name, config=config);
+        # Create database connection instance
+        try:
+            db_module = __import__( 'classes.minion.database.%s' % config['type'], fromlist=['classes.minion.database'])
+        except:
+            raise Exception("Unable to load database type.")
+        return db_module.instance(name=name, config=config);
+    return minion_database_base.instances[name]
 
 
 # Database connection wraper/helper.
