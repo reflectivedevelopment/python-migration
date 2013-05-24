@@ -140,7 +140,7 @@ class model_minion_migration():
     def ensure_table_exists(self):
         query = self._db.query(database.SELECT, 'SHOW TABLES like \'%s\'' % self._table)
 
-        if query.rowcount <= 0:
+        if len(query) <= 0:
             sql = ''
             with open(MIGRATION_SQL) as f:
                 sql = f.read()
@@ -339,6 +339,7 @@ class model_minion_migration():
     # */
     def fetch_all(self, key=None, value=None):
         raise NotImplementedError("TODO")
+        
 #	public function fetch_all($key = NULL, $value = NULL)
 #	{
 #		return $this->_select()

@@ -8,7 +8,14 @@ object = base.instance()
 response =  object.query(base.minion_database_base.SELECT, "SELECT * FROM `test`")
 for r in response:
     print r
-#print object.query(base.minion_database_base.INSERT, "INSERT INTO `test` (i) VALUES (4)")
+
+print response.as_array()
+print response.as_array('i')
+print response.as_array('i','i')
+
+
+print len(response)
+#print object.query(base.minion_database_base.INSERT, "INSERT INTO `test` (i) VALUES (5)")
 
 import classes.minion.migration.manager as manager
 

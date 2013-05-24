@@ -1,6 +1,7 @@
-from base import minion_database_base
+from ..base import minion_database_base
 import hashlib
 import sqlalchemy
+from result import database_mysql_result
 
 def instance(name=None, config=None):
     return minion_database_mysql(name=name, config=config)
@@ -163,9 +164,9 @@ class minion_database_mysql(minion_database_base):
         self.last_query = sql
 
         if type == minion_database_base.SELECT:
-            return result
+            return database_mysql_result(result, sql)
         elif type == minion_database_base.INSERT:
-            return [result.lastrowid, result.rowcount]
+            return (result.lastrowid, result.rowcount)
         else:
             return result.rowcount
 
