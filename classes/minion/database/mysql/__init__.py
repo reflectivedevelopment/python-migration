@@ -381,22 +381,10 @@ class minion_database_mysql(minion_database_base):
 #	}
 
     def escape(self, value):
-        raise NotImplementedError("TODO")
+        if not self._connection:
+            self.connect()
+
+        value = self._connection.raw_connection().escape(value)
         
-#	public function escape($value)
-#	{
-#		// Make sure the database is connected
-#		$this->_connection or $this->connect();
-#
-#		if (($value = mysql_real_escape_string( (string) $value, $this->_connection)) === FALSE)
-#		{
-#			throw new Database_Exception(':error',
-#				array(':error' => mysql_error($this->_connection)),
-#				mysql_errno($this->_connection));
-#		}
-#
-#		// SQL standard is to use single-quotes for all values
-#		return "'$value'";
-#	}
-#
-#} // End Database_MySQL
+        return value
+

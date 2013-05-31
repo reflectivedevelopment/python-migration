@@ -15,7 +15,7 @@ print response.as_array('i','i')
 
 print len(response)
 
-print object.select().from_table('test').execute(object)
+print object.select().from_table('test').where('i','=','1').execute(object).as_array()
 #print object.query(base.minion_database_base.INSERT, "INSERT INTO `test` (i) VALUES (5)")
 
 import classes.minion.migration.manager as manager

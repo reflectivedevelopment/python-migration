@@ -1,4 +1,6 @@
 
+import re
+
 # Get a singleton Database instance. If configruation is not specified,
 # it will be loaded from the database configuration file using the same
 # group as the name.
@@ -356,7 +358,7 @@ class minion_database_base():
             return 'NULL'
         elif value == True:
             return '1'
-        elif value == FALSE:
+        elif value == False:
             return '0'
 #         elif value == 
 #
@@ -408,17 +410,12 @@ class minion_database_base():
     # * @uses    Database::table_prefix
     # */
     def quote_column(self, column):
-        if is_instance(column, list):
-           raise NotImplementedError("TODO")
+        alias = None
+
+        if isinstance(column, list):
+           column, alias = column
         raise NotImplementedError("TODO")
         
-#	public function quote_column($column)
-#	{
-#		if (is_array($column))
-#		{
-#			list($column, $alias) = $column;
-#		}
-#
 #		if ($column instanceof Database_Query)
 #		{
 #			// Create a sub-query
@@ -432,7 +429,18 @@ class minion_database_base():
 #		else
 #		{
 #			// Convert to a string
-#			$column = (string) $column;
+        column = str(column)
+
+        if column == '*':
+            return column
+        elif '"' in column:
+#				// Quote the column in FUNC("column") identifiers
+            
+#				$column = preg_replace('/"(.+?)"/e', '$this->quote_column("$1")', $column);
+
+
+
+
 #
 #			if ($column === '*')
 #			{
@@ -440,7 +448,6 @@ class minion_database_base():
 #			}
 #			elseif (strpos($column, '"') !== FALSE)
 #			{
-#				// Quote the column in FUNC("column") identifiers
 #				$column = preg_replace('/"(.+?)"/e', '$this->quote_column("$1")', $column);
 #			}
 #			elseif (strpos($column, '.') !== FALSE)

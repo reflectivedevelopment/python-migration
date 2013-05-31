@@ -34,7 +34,9 @@ class database_query_builder(database_query):
         sql = '';
 
         for group in conditions:
-            for logic, condition in condition.iteritems():
+            logic = None
+            condition = None
+            for logic, condition in group.iteritems():
                 if condition == '(':
                     if len(sql) > 0 and last_condition != '(':
                         sql = '%s %s ' % (sql, logic)
@@ -77,12 +79,12 @@ class database_query_builder(database_query):
                         value = db.quote(value)
 
                     if column is not None:
-                        if isinstance(columnm, (list, tuple)):
+                        if isinstance(column, (list, tuple)):
 #							// Use the column name
                             column = db.quote_identifier(column[0])
                         else:
 #							// Apply proper quoting to the column
-                            column = db.quote_column(coumn)
+                            column = db.quote_column(column)
 #
                     last_condition = condition
 #
