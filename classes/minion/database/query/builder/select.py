@@ -24,7 +24,7 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @return  void
 #	 */
     def __init__(self, columns = None):
-        if len(columns) > 0:
+        if columns is not None and len(columns) > 0:
             # Set the initial columns
             self._select = columns
 
@@ -49,7 +49,7 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @return  $this
 #	 */
     def select(self, *columns):
-        self._select = self._select + columns
+        self._select = self._select + list(columns)
 
         return self
 
@@ -60,7 +60,7 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @return  $this
 #	 */
     def select_array(self, columns):
-        self._select = self._select + columns
+        self._select = self._select + list(columns)
 
         return self
 
@@ -71,7 +71,7 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @return  $this
 #	 */
     def from_table(self, *tables):
-        self._from = self._from + tables
+        self._from = self._from + list(tables)
 
         return self
 
@@ -118,15 +118,11 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @param   mixed   $columns  column name or array($column, $alias) or object
 #	 * @return  $this
 #	 */
-#	public function group_by($columns)
-#	{
-#		$columns = func_get_args();
-#
-#		$this->_group_by = array_merge($this->_group_by, $columns);
-#
-#		return $this;
-#	}
-#
+    def group_by(self, *columns):
+        self._group_by = self._group_by + list(columns)
+
+        return self
+
 #	/**
 #	 * Alias of and_having()
 #	 *
@@ -135,11 +131,9 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @param   mixed   $value   column value
 #	 * @return  $this
 #	 */
-#	public function having($column, $op, $value = NULL)
-#	{
-#		return $this->and_having($column, $op, $value);
-#	}
-#
+    def having(self, column, op, value = None):
+        return self.and_having(column, op, value)
+
 #	/**
 #	 * Creates a new "AND HAVING" condition for the query.
 #	 *
@@ -148,13 +142,11 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @param   mixed   $value   column value
 #	 * @return  $this
 #	 */
-#	public function and_having($column, $op, $value = NULL)
-#	{
-#		$this->_having[] = array('AND' => array($column, $op, $value));
-#
-#		return $this;
-#	}
-#
+    def and_having(self, columns, op, value = None):
+        self._having.append({'AND': [column, op, value]})
+
+        return self
+
 #	/**
 #	 * Creates a new "OR HAVING" condition for the query.
 #	 *
@@ -163,81 +155,67 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @param   mixed   $value   column value
 #	 * @return  $this
 #	 */
-#	public function or_having($column, $op, $value = NULL)
-#	{
-#		$this->_having[] = array('OR' => array($column, $op, $value));
-#
-#		return $this;
-#	}
-#
+    def or_having(self, column, op, value = None):
+        self._having.append({'OR': [column, op, value]})
+
+        return self
+
 #	/**
 #	 * Alias of and_having_open()
 #	 *
 #	 * @return  $this
 #	 */
-#	public function having_open()
-#	{
-#		return $this->and_having_open();
-#	}
-#
+    def having_open(self):
+        return self.and_having_open()
+
 #	/**
 #	 * Opens a new "AND HAVING (...)" grouping.
 #	 *
 #	 * @return  $this
 #	 */
-#	public function and_having_open()
-#	{
-#		$this->_having[] = array('AND' => '(');
-#
-#		return $this;
-#	}
-#
+    def and_having_open(self):
+        self._having.append({'AND': '('})
+
+        return self
+
 #	/**
 #	 * Opens a new "OR HAVING (...)" grouping.
 #	 *
 #	 * @return  $this
 #	 */
-#	public function or_having_open()
-#	{
-#		$this->_having[] = array('OR' => '(');
-#
-#		return $this;
-#	}
-#
+    def or_having_open(self):
+        self._having.append({'OR': '('})
+
+        return self
+
 #	/**
 #	 * Closes an open "AND HAVING (...)" grouping.
 #	 *
 #	 * @return  $this
 #	 */
-#	public function having_close()
-#	{
-#		return $this->and_having_close();
-#	}
-#
+    def having_close(self):
+        return self.and_having_close()
+
 #	/**
 #	 * Closes an open "AND HAVING (...)" grouping.
 #	 *
 #	 * @return  $this
 #	 */
-#	public function and_having_close()
-#	{
-#		$this->_having[] = array('AND' => ')');
-#
-#		return $this;
-#	}
+    def and_having_close(self):
+        self._having.append({'AND': ')'})
+
+        return self
 #
 #	/**
 #	 * Closes an open "OR HAVING (...)" grouping.
 #	 *
 #	 * @return  $this
 #	 */
-#	public function or_having_close()
-#	{
-#		$this->_having[] = array('OR' => ')');
-#
-#		return $this;
-#	}
-#
+    def or_having_close(self):
+        self._having.append({'OR': ')'})
+
+        return self
+
 #	/**
 #	 * Adds an other UNION clause.
 #	 *
@@ -246,39 +224,35 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @param boolean $all  decides if it's an UNION or UNION ALL clause
 #	 * @return $this
 #	 */
-#	public function union($select, $all = TRUE)
-#	{
-#		if (is_string($select))
-#		{
-#			$select = DB::select()->from($select);
-#		}
+#    def union(self, select, all=True):
+#        if isinstance(select, str):
+#            select = database.select().from_table(select)
+
+# TODO
 #		if ( ! $select instanceof Database_Query_Builder_Select)
 #			throw new Kohana_Exception('first parameter must be a string or an instance of Database_Query_Builder_Select');
-#		$this->_union []= array('select' => $select, 'all' => $all);
-#		return $this;
-#	}
-#
+        self._union.append({'select': select, 'all': all})
+
+        return self
+
 #	/**
 #	 * Start returning results after "OFFSET ..."
 #	 *
 #	 * @param   integer   $number  starting result number or NULL to reset
 #	 * @return  $this
 #	 */
-#	public function offset($number)
-#	{
-#		$this->_offset = $number;
-#
-#		return $this;
-#	}
-#
+    def offset(self, number):
+       self._offset = number
+
+       return self
+
 #	/**
 #	 * Compile the SQL query and return it.
 #	 *
 #	 * @param   object  $db  Database instance
 #	 * @return  string
 #	 */
-#	public function compile(Database $db)
-#	{
+    def compile(self, db):
 #		// Callback to quote columns
 #		$quote_column = array($db, 'quote_column');
 #
@@ -286,112 +260,70 @@ class database_query_builder_select(database_query_builder_where):
 #		$quote_table = array($db, 'quote_table');
 #
 #		// Start a selection query
-#		$query = 'SELECT ';
-#
-#		if ($this->_distinct === TRUE)
-#		{
+        query = 'SELECT '
+
+        if self._distinct:
 #			// Select only unique results
-#			$query .= 'DISTINCT ';
-#		}
-#
-#		if (empty($this->_select))
-#		{
+            query = '%sDISTINCT ' % query
+
+        if len(self._select) <= 0:
 #			// Select all columns
-#			$query .= '*';
-#		}
-#		else
-#		{
+            query = '%s*' % query
+        else:
 #			// Select all columns
-#			$query .= implode(', ', array_unique(array_map($quote_column, $this->_select)));
-#		}
-#
-#		if ( ! empty($this->_from))
-#		{
-#			// Set tables to select from
-#			$query .= ' FROM '.implode(', ', array_unique(array_map($quote_table, $this->_from)));
-#		}
-#
-#		if ( ! empty($this->_join))
-#		{
-#			// Add tables to join
-#			$query .= ' '.$this->_compile_join($db, $this->_join);
-#		}
-#
-#		if ( ! empty($this->_where))
-#		{
-#			// Add selection conditions
-#			$query .= ' WHERE '.$this->_compile_conditions($db, $this->_where);
-#		}
-#
-#		if ( ! empty($this->_group_by))
-#		{
-#			// Add grouping
-#			$query .= ' '.$this->_compile_group_by($db, $this->_group_by);
-#		}
-#
-#		if ( ! empty($this->_having))
-#		{
-#			// Add filtering conditions
-#			$query .= ' HAVING '.$this->_compile_conditions($db, $this->_having);
-#		}
-#
-#		if ( ! empty($this->_order_by))
-#		{
-#			// Add sorting
-#			$query .= ' '.$this->_compile_order_by($db, $this->_order_by);
-#		}
-#
-#		if ($this->_limit !== NULL)
-#		{
-#			// Add limiting
-#			$query .= ' LIMIT '.$this->_limit;
-#		}
-#
-#		if ($this->_offset !== NULL)
-#		{
-#			// Add offsets
-#			$query .= ' OFFSET '.$this->_offset;
-#		}
-#
-#		if ( ! empty($this->_union))
-#		{
-#			foreach ($this->_union as $u) {
-#				$query .= ' UNION ';
-#				if ($u['all'] === TRUE)
-#				{
-#					$query .= 'ALL ';
-#				}
-#				$query .= $u['select']->compile($db);
-#			}
-#		}
-#
-#		$this->_sql = $query;
-#
-#		return parent::compile($db);
-#	}
-#
-#	public function reset()
-#	{
-#		$this->_select   =
-#		$this->_from     =
-#		$this->_join     =
-#		$this->_where    =
-#		$this->_group_by =
-#		$this->_having   =
-#		$this->_order_by =
-#		$this->_union = array();
-#
-#		$this->_distinct = FALSE;
-#
-#		$this->_limit     =
-#		$this->_offset    =
-#		$this->_last_join = NULL;
-#
-#		$this->_parameters = array();
-#
-#		$this->_sql = NULL;
-#
-#		return $this;
-#	}
-#
-#} // End Database_Query_Select
+            query = '%s%s' % (query, ', '.join( list( set ( [db.quote_column(x) for x in self._select] ) ) ) )
+
+        if len(self._from) > 0:
+            query = '%s FROM %s' % (query, ', '.join( list( set ( [db.quote_table(x) for x in self._from] ) ) ) )
+
+        if len(self._join) > 0:
+            query = '%s %s' % (query, self._compile_join(db, self._join))
+
+        if len(self._where) > 0:
+            query = '%s WHERE %' % (query, self._compile_conditions(db, self._where))
+
+        if len(self._group_by) > 0:
+            query = '%s %s' % (query, self._compile_group_by(db, self._group_by))
+
+        if len(self._having) > 0:
+            query = '%s HAVING %s' % (query, self._compile_conditions(db, self._having))
+
+        if len(self._order_by) > 0:
+            query = '%s %s' % (query, self._compile_order_by(db, self._order_by))
+
+        if self._limit is not None:
+            query = '%s LIMIT %s' % (query, self._limit)
+
+        if self._offset is not None:
+            query = '%s OFFSET %s' % (query, self._offset)
+
+        if len(self._union) > 0:
+            for u in self._union:
+                union_sql = ' UNION '
+                if u['all']:
+                    union_sql = '%s ALL ' % (union_sql)
+                query = '%s %s %s' % (query, union_sql, u['select'].compile(db))
+
+        self._sql = query
+
+        return database_query_builder_where.compile(self, db)
+
+    def reset(self):
+        self._select = []
+        self._distinct = False
+        self._from = []
+        self._join = []
+        self._group_by = []
+        self._having = []
+        self._offset = None
+        self._union = []
+        self._last_join = None
+        self._where = []
+        self._order_by = []
+        self._limit = None
+
+        self._parameters = []
+
+        self._sql = None
+
+        return self

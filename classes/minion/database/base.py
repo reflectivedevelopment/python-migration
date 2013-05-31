@@ -25,14 +25,12 @@ def instance(name = None, config = None):
         return db_module.instance(name=name, config=config);
     return minion_database_base.instances[name]
 
-
 # Database connection wraper/helper.
 
 # This class provides connection instance management via Database Drivers, as
 # well as quoting, escaping and other related functions.
 
 class minion_database_base():
-
     # Query types
     SELECT = 1
     INSERT = 2
@@ -107,6 +105,24 @@ class minion_database_base():
     # */
     def query(self, type, sql, as_object=False, params=None):
         raise NotImplementedError("Abstract")
+
+
+    # /**
+    # * Create a new [Database_Query_Builder_Select]. Each argument will be
+    # * treated as a column. To generate a `foo AS bar` alias, use an array.
+    # *
+    # *     // SELECT id, username
+    # *     $query = DB::select('id', 'username');
+    # *
+    # *     // SELECT id AS user_id
+    # *     $query = DB::select(array('id', 'user_id'));
+    # *
+    # * @param   mixed   $columns  column name or array($column, $alias) or object
+    # * @return  Database_Query_Builder_Select
+    # */
+    def select(self, columns=None):
+        from classes.minion.database.query.builder.select import database_query_builder_select
+        return database_query_builder_select(columns)
 
     #/**
     # * Start a SQL transaction
@@ -480,13 +496,12 @@ class minion_database_base():
 #	 * @uses    Database::quote_identifier
 #	 * @uses    Database::table_prefix
 #	 */
-#	public function quote_table($table)
-#	{
-#		if (is_array($table))
-#		{
-#			list($table, $alias) = $table;
-#		}
-#
+    def quote_table(self, table):
+        alias = None
+
+        if isinstance(table, (tuple,list)):
+            table, alias = table
+
 #		if ($table instanceof Database_Query)
 #		{
 #			// Create a sub-query
@@ -498,46 +513,33 @@ class minion_database_base():
 #			$table = $table->compile($this);
 #		}
 #		else
-#		{
-#			// Convert to a string
-#			$table = (string) $table;
-#
-#			if (strpos($table, '.') !== FALSE)
-#			{
-#				$parts = explode('.', $table);
-#
-#				if ($prefix = $this->table_prefix())
-#				{
+
+        table = str(table)
+
+        if '.' in table:
+            parts = table.split('.')
+
+            prefix = self.table_prefix()
+
+            if prefix:
 #					// Get the offset of the table name, last part
-#					$offset = count($parts) - 1;
-#
+                offset = len(parts) - 1
+
 #					// Add the table prefix to the table name
-#					$parts[$offset] = $prefix.$parts[$offset];
-#				}
-#
-#				foreach ($parts as & $part)
-#				{
+                parts[offset] = '%s%s' % (prefix, parts[offset])
+
 #					// Quote each of the parts
-#					$part = $this->_identifier.$part.$this->_identifier;
-#				}
-#
-#				$table = implode('.', $parts);
-#			}
-#			else
-#			{
+            parts = ['%s%s%s' % (self._identifier, p, self._identifier) for p in parts]
+
+            table = '.'.join(parts)
+        else:
 #				// Add the table prefix
-#				$table = $this->_identifier.$this->table_prefix().$table.$this->_identifier;
-#			}
-#		}
-#
-#		if (isset($alias))
-#		{
-#			// Attach table prefix to alias
-#			$table .= ' AS '.$this->_identifier.$this->table_prefix().$alias.$this->_identifier;
-#		}
-#
-#		return $table;
-#	}
+            table = '%s%s%s%s' % (self._identifier, self.table_prefix(), table, self._identifier)
+
+        if alias:
+            table = '%s AS %s%s%s%s' % (table, self._identifier, self.table_prefix(), alias, self._identifier)
+
+        return table
 #
 #	/**
 #	 * Quote a database identifier
