@@ -1,89 +1,71 @@
+from where import database_query_builder_where
+from classes.minion.database.base import minion_database_base as database
+
 #/**
 # * Database query builder for DELETE statements. See [Query Builder](/database/query/builder) for usage and examples.
 # *
 # */
-class database_query_builder(query_builder_where):
-#
-#class Kohana_Database_Query_Builder_Delete extends Database_Query_Builder_Where {
-#
+class database_query_builder_delete(database_query_builder_where):
+
 #	// DELETE FROM ...
-#	protected $_table;
-#
+    _table = None
+
 #	/**
 #	 * Set the table for a delete.
 #	 *
 #	 * @param   mixed  $table  table name or array($table, $alias) or object
 #	 * @return  void
 #	 */
-#	public function __construct($table = NULL)
-#	{
-#		if ($table)
-#		{
+    def __init__(self, table = None):
+       if table:
 #			// Set the inital table name
-#			$this->_table = $table;
-#		}
-#
+           self._table = table
+
 #		// Start the query with no SQL
-#		return parent::__construct(Database::DELETE, '');
-#	}
-#
+       database_query_builder_where.__init__(self, database.DELETE, '')
+
 #	/**
 #	 * Sets the table to delete from.
 #	 *
 #	 * @param   mixed  $table  table name or array($table, $alias) or object
 #	 * @return  $this
 #	 */
-#	public function table($table)
-#	{
-#		$this->_table = $table;
-#
-#		return $this;
-#	}
-#
+    def table(self, table):
+        self._table = table
+
+        return self
+
 #	/**
 #	 * Compile the SQL query and return it.
 #	 *
 #	 * @param   object  $db  Database instance
 #	 * @return  string
 #	 */
-#	public function compile(Database $db)
-#	{
+    def compile(self, db):
 #		// Start a deletion query
-#		$query = 'DELETE FROM '.$db->quote_table($this->_table);
-#
-#		if ( ! empty($this->_where))
-#		{
+        query = 'DELETE FROM %s' % (db.quote_table(self._table))
+
+        if len(self._where) > 0:
 #			// Add deletion conditions
-#			$query .= ' WHERE '.$this->_compile_conditions($db, $this->_where);
-#		}
-#
-#		if ( ! empty($this->_order_by))
-#		{
+            query = '%s WHERE %s' % (query, self._compile_conditions(db, self._where)) 
+
+        if len(self._order_by) > 0:
 #			// Add sorting
-#			$query .= ' '.$this->_compile_order_by($db, $this->_order_by);
-#		}
-#
-#		if ($this->_limit !== NULL)
-#		{
-#			// Add limiting
-#			$query .= ' LIMIT '.$this->_limit;
-#		}
-#
-#		$this->_sql = $query;
-#
-#		return parent::compile($db);
-#	}
-#
-#	public function reset()
-#	{
-#		$this->_table = NULL;
-#		$this->_where = array();
-#
-#		$this->_parameters = array();
-#
-#		$this->_sql = NULL;
-#
-#		return $this;
-#	}
-#
-#} // End Database_Query_Builder_Delete
+            query = '%s %s' % (query, self._compile_order_by(db, self._order_by))
+
+        if self._limit is not None:
+            query = '%s LIMIT %s' % (query, self._limit)
+
+        self._sql = query
+
+        return database_query_builder_where.compile(self, db)
+
+    def reset(self):
+        self._table = None
+        self._where = []
+
+        self._parameters = []
+
+        self._sql = None
+
+        return self

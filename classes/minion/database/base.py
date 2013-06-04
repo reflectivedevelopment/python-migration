@@ -108,24 +108,6 @@ class minion_database_base():
     def query(self, type, sql, as_object=False, params=None):
         raise NotImplementedError("Abstract")
 
-
-    # /**
-    # * Create a new [Database_Query_Builder_Select]. Each argument will be
-    # * treated as a column. To generate a `foo AS bar` alias, use an array.
-    # *
-    # *     // SELECT id, username
-    # *     $query = DB::select('id', 'username');
-    # *
-    # *     // SELECT id AS user_id
-    # *     $query = DB::select(array('id', 'user_id'));
-    # *
-    # * @param   mixed   $columns  column name or array($column, $alias) or object
-    # * @return  Database_Query_Builder_Select
-    # */
-    def select(self, columns=None):
-        from classes.minion.database.query.builder.select import database_query_builder_select
-        return database_query_builder_select(columns)
-
     #/**
     # * Start a SQL transaction
     # *
