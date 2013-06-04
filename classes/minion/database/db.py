@@ -64,11 +64,10 @@ def select(columns=None):
 #	 * @param   array   $columns  list of column names or array($column, $alias) or object
 #	 * @return  Database_Query_Builder_Insert
 #	 */
-#	public static function insert($table = NULL, array $columns = NULL)
-#	{
-#		return new Database_Query_Builder_Insert($table, $columns);
-#	}
-#
+def insert(table=None, columns=None):
+    from classes.minion.database.query.builder.insert import database_query_builder_insert
+    return database_query_builder_insert(table, columns)
+
 #	/**
 #	 * Create a new [Database_Query_Builder_Update].
 #	 *
@@ -95,11 +94,7 @@ def select(columns=None):
 def delete(table=None):
     from classes.minion.database.query.builder.delete import database_query_builder_delete
     return database_query_builder_delete(table)
-#	public static function delete($table = NULL)
-#	{
-#		return new Database_Query_Builder_Delete($table);
-#	}
-#
+
 #	/**
 #	 * Create a new [Database_Expression] which is not escaped. An expression
 #	 * is the only way to use SQL functions within query builders.

@@ -1,18 +1,20 @@
+from where import database_query_builder_where
+from classes.minion.database.base import minion_database_base as database
+
 #<?php defined('SYSPATH') OR die('No direct script access.');
 #/**
 # * Database query builder for INSERT statements. See [Query Builder](/database/query/builder) for usage and examples.
 # */
-#class Kohana_Database_Query_Builder_Insert extends Database_Query_Builder {
-#
+class database_query_builder_insert(database_query_builder_where):
 #	// INSERT INTO ...
-#	protected $_table;
-#
+    _table = None
+
 #	// (...)
-#	protected $_columns = array();
+    _columns = []
 #
 #	// VALUES (...)
-#	protected $_values = array();
-#
+    _values = []
+
 #	/**
 #	 * Set the table and columns for an insert.
 #	 *
@@ -20,50 +22,40 @@
 #	 * @param   array  $columns  column names
 #	 * @return  void
 #	 */
-#	public function __construct($table = NULL, array $columns = NULL)
-#	{
-#		if ($table)
-#		{
+    def __init__(self, table=None, columns=None):
+        if table:
 #			// Set the inital table name
-#			$this->_table = $table;
-#		}
-#
-#		if ($columns)
-#		{
+            self._table = table
+
+        if columns:
 #			// Set the column names
-#			$this->_columns = $columns;
-#		}
-#
+            self._columns = columns
+
 #		// Start the query with no SQL
-#		return parent::__construct(Database::INSERT, '');
-#	}
-#
+        database_query_builder_where.__init__(self, database.INSERT, '')
+
 #	/**
 #	 * Sets the table to insert into.
 #	 *
 #	 * @param   mixed  $table  table name or array($table, $alias) or object
 #	 * @return  $this
 #	 */
-#	public function table($table)
-#	{
-#		$this->_table = $table;
-#
-#		return $this;
-#	}
-#
+    def table(self, table):
+        self._table = table
+
+        return self
+
 #	/**
 #	 * Set the columns that will be inserted.
 #	 *
 #	 * @param   array  $columns  column names
 #	 * @return  $this
 #	 */
-#	public function columns(array $columns)
-#	{
-#		$this->_columns = $columns;
-#
-#		return $this;
-#	}
-#
+    def columns(self, columns):
+        self._columns = columns
+
+        return self
+
 #	/**
 #	 * Adds or overwrites values. Multiple value sets can be added.
 #	 *
@@ -71,21 +63,17 @@
 #	 * @param   ...
 #	 * @return  $this
 #	 */
-#	public function values(array $values)
-#	{
-#		if ( ! is_array($this->_values))
-#		{
-#			throw new Kohana_Exception('INSERT INTO ... SELECT statements cannot be combined with INSERT INTO ... VALUES');
-#		}
-#
+    def values(self, values):
+        if not isinstance(self._values, (tuple, list)):
+            raise Exeception('INSERT INTO ... SELECT statements cannot be combined with INSERT INTO ... VALUES')
+
 #		// Get all of the passed values
-#		$values = func_get_args();
-#
-#		$this->_values = array_merge($this->_values, $values);
-#
-#		return $this;
-#	}
-#
+        values = [list(values)]
+
+        self._values = self._values + values
+
+        return self
+
 #	/**
 #	 * Use a sub-query to for the inserted values.
 #	 *
@@ -110,60 +98,47 @@
 #	 * @param   object  $db  Database instance
 #	 * @return  string
 #	 */
-#	public function compile(Database $db)
-#	{
+    def compile(self, db):
 #		// Start an insertion query
-#		$query = 'INSERT INTO '.$db->quote_table($this->_table);
-#
+        query = 'INSERT INTO %s' % (db.quote_table(self._table))
+
 #		// Add the column names
-#		$query .= ' ('.implode(', ', array_map(array($db, 'quote_column'), $this->_columns)).') ';
-#
-#		if (is_array($this->_values))
-#		{
+        query = '%s (%s) ' % (query, ', '.join([db.quote_column(c) for c in self._columns]))
+
+        if isinstance(self._values, (list, tuple)):
 #			// Callback for quoting values
 #			$quote = array($db, 'quote');
 #
-#			$groups = array();
-#			foreach ($this->_values as $group)
-#			{
-#				foreach ($group as $offset => $value)
-#				{
-#					if ((is_string($value) AND array_key_exists($value, $this->_parameters)) === FALSE)
-#					{
+            groups = []
+
+            for group in self._values:
+                offset = 0
+                for value in group:
+                    if isinstance(value, str) and not self._parameters.has_key(value):
 #						// Quote the value, it is not a parameter
-#						$group[$offset] = $db->quote($value);
-#					}
-#				}
+                        group[offset] = db.quote(value)
 #
-#				$groups[] = '('.implode(', ', $group).')';
-#			}
-#
+                    offset += 1
+                groups.append('(%s)' % (', '.join(group)))
+
 #			// Add the values
-#			$query .= 'VALUES '.implode(', ', $groups);
-#		}
-#		else
-#		{
+            query = '%s VALUES %s' % (query, ', '.join(groups))
+        else:
 #			// Add the sub-query
-#			$query .= (string) $this->_values;
-#		}
-#
-#		$this->_sql = $query;
-#
-#		return parent::compile($db);;
-#	}
-#
-#	public function reset()
-#	{
-#		$this->_table = NULL;
-#
-#		$this->_columns =
-#		$this->_values  = array();
-#
-#		$this->_parameters = array();
-#
-#		$this->_sql = NULL;
-#
-#		return $this;
-#	}
-#
-#} // End Database_Query_Builder_Insert
+            query = '%s %s' % (query, str( self._values))
+
+        self._sql = query
+
+        return database_query_builder_where.compile(self, db)
+
+    def reset(self):
+       self._table = None
+
+       self._columns = []
+       self._values = []
+
+       self._parameters = dict()
+
+       self._sql = None
+
+       return self

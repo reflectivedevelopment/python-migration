@@ -64,7 +64,7 @@ class database_query_builder_delete(database_query_builder_where):
         self._table = None
         self._where = []
 
-        self._parameters = []
+        self._parameters = dict()
 
         self._sql = None
 

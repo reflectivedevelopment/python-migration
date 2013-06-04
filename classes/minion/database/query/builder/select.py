@@ -322,7 +322,7 @@ class database_query_builder_select(database_query_builder_where):
         self._order_by = []
         self._limit = None
 
-        self._parameters = []
+        self._parameters = dict()
 
         self._sql = None
 
