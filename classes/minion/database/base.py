@@ -414,8 +414,6 @@ class minion_database_base():
 
         if isinstance(column, list):
            column, alias = column
-        raise NotImplementedError("TODO")
-        
 #		if ($column instanceof Database_Query)
 #		{
 #			// Create a sub-query
@@ -435,58 +433,33 @@ class minion_database_base():
             return column
         elif '"' in column:
 #				// Quote the column in FUNC("column") identifiers
-            
-#				$column = preg_replace('/"(.+?)"/e', '$this->quote_column("$1")', $column);
+            re.sub('/"(.+?)"/e', self.quote_column(), column)
+        elif '.' in column:
+            parts = column.split('.')
 
+            prefix = self.table_prefix()
 
-
-
-#
-#			if ($column === '*')
-#			{
-#				return $column;
-#			}
-#			elseif (strpos($column, '"') !== FALSE)
-#			{
-#				$column = preg_replace('/"(.+?)"/e', '$this->quote_column("$1")', $column);
-#			}
-#			elseif (strpos($column, '.') !== FALSE)
-#			{
-#				$parts = explode('.', $column);
-#
-#				if ($prefix = $this->table_prefix())
-#				{
+            if prefix:
 #					// Get the offset of the table name, 2nd-to-last part
-#					$offset = count($parts) - 2;
-#
+                offset = len(parts) - 2
+
 #					// Add the table prefix to the table name
-#					$parts[$offset] = $prefix.$parts[$offset];
-#				}
-#
-#				foreach ($parts as & $part)
-#				{
-#					if ($part !== '*')
-#					{
+                parts[offset] = '%s%s' % (prefix, parts[offset])
+
+            for part in parts:
+                if part != '*':
 #						// Quote each of the parts
-#						$part = $this->_identifier.$part.$this->_identifier;
-#					}
-#				}
-#
-#				$column = implode('.', $parts);
-#			}
-#			else
-#			{
-#				$column = $this->_identifier.$column.$this->_identifier;
-#			}
-#		}
-#
-#		if (isset($alias))
-#		{
-#			$column .= ' AS '.$this->_identifier.$alias.$this->_identifier;
-#		}
-#
-#		return $column;
-#	}
+                    part = '%s%s%s' % (self._identifier, part, self._identifier)
+
+            column = '.'.join(parts)
+
+        else:
+            column = '%s%s%s' % (self._identifier, column, self._identifier)
+
+        if alias:
+            colimn = '%s AS %s%s%s' % (column, self._identifier, alias, self._identifier)
+
+        return column
 
 #	/**
 #	 * Quote a database table name and adds the table prefix if needed.

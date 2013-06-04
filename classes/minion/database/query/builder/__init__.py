@@ -85,6 +85,10 @@ class database_query_builder(database_query):
                         else:
 #							// Apply proper quoting to the column
                             column = db.quote_column(column)
+
+                    # append the statemnt to the query
+
+                    sql = '%s%s %s %s' % (sql, column, op, value)
 #
                     last_condition = condition
 #

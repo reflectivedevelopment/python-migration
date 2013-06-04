@@ -280,7 +280,8 @@ class database_query_builder_select(database_query_builder_where):
             query = '%s %s' % (query, self._compile_join(db, self._join))
 
         if len(self._where) > 0:
-            query = '%s WHERE %' % (query, self._compile_conditions(db, self._where))
+            print self._where
+            query = '%s WHERE %s' % (query, self._compile_conditions(db, self._where))
 
         if len(self._group_by) > 0:
             query = '%s %s' % (query, self._compile_group_by(db, self._group_by))
