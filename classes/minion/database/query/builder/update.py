@@ -1,32 +1,30 @@
+from where import database_query_builder_where
+from classes.minion.database.base import minion_database_base as database
+
 #<?php defined('SYSPATH') OR die('No direct script access.');
 #/**
 # * Database query builder for UPDATE statements. See [Query Builder](/database/query/builder) for usage and examples.
 # */
-#class Kohana_Database_Query_Builder_Update extends Database_Query_Builder_Where {
-#
+class database_query_builder_update(database_query_builder_where):
 #	// UPDATE ...
-#	protected $_table;
+    _table = None
 #
 #	// SET ...
-#	protected $_set = array();
-#
+    _set = dict()
+
 #	/**
 #	 * Set the table for a update.
 #	 *
 #	 * @param   mixed  $table  table name or array($table, $alias) or object
 #	 * @return  void
 #	 */
-#	public function __construct($table = NULL)
-#	{
-#		if ($table)
-#		{
-#			// Set the inital table name
-#			$this->_table = $table;
-#		}
-#
-#		// Start the query with no SQL
-#		return parent::__construct(Database::UPDATE, '');
-#	}
+    def __init__(self, table = None):
+       if table:
+#                       // Set the inital table name
+           self._table = table
+
+#               // Start the query with no SQL
+       database_query_builder_where.__init__(self, database.UPDATE, '')
 #
 #	/**
 #	 * Sets the table to update.
@@ -34,29 +32,23 @@
 #	 * @param   mixed  $table  table name or array($table, $alias) or object
 #	 * @return  $this
 #	 */
-#	public function table($table)
-#	{
-#		$this->_table = $table;
-#
-#		return $this;
-#	}
-#
+    def table(self, table):
+        self._table = table
+
+        return self
+
 #	/**
 #	 * Set the values to update with an associative array.
 #	 *
 #	 * @param   array   $pairs  associative (column => value) list
 #	 * @return  $this
 #	 */
-#	public function set(array $pairs)
-#	{
-#		foreach ($pairs as $column => $value)
-#		{
-#			$this->_set[] = array($column, $value);
-#		}
-#
-#		return $this;
-#	}
-#
+    def set(self, pairs):
+        for column in pairs:
+            self._set[column] = pairs[column]
+
+        return self
+
 #	/**
 #	 * Set the value of a single column.
 #	 *
@@ -64,65 +56,48 @@
 #	 * @param   mixed  $value   column value
 #	 * @return  $this
 #	 */
-#	public function value($column, $value)
-#	{
-#		$this->_set[] = array($column, $value);
-#
-#		return $this;
-#	}
-#
+    def value(self, column, value):
+       self._set[column] = value
+
+       return self
+
 #	/**
 #	 * Compile the SQL query and return it.
 #	 *
 #	 * @param   object  $db  Database instance
 #	 * @return  string
 #	 */
-#	public function compile(Database $db)
-#	{
+    def compile(self, db):
 #		// Start an update query
-#		$query = 'UPDATE '.$db->quote_table($this->_table);
-#
+        query = 'UPDATE %s' % (db.quote_table(self._table))
+
 #		// Add the columns to update
-#		$query .= ' SET '.$this->_compile_set($db, $this->_set);
-#
-#		if ( ! empty($this->_where))
-#		{
+        query = '%s SET %s' % (query, self._compile_set(db, self._set))
+
+        if len(self._where) > 0:
 #			// Add selection conditions
-#			$query .= ' WHERE '.$this->_compile_conditions($db, $this->_where);
-#		}
-#
-#		if ( ! empty($this->_order_by))
-#		{
-#			// Add sorting
-#			$query .= ' '.$this->_compile_order_by($db, $this->_order_by);
-#		}
-#
-#		if ($this->_limit !== NULL)
-#		{
-#			// Add limiting
-#			$query .= ' LIMIT '.$this->_limit;
-#		}
-#
-#		$this->_sql = $query;
-#
-#		return parent::compile($db);
-#	}
-#
-#	public function reset()
-#	{
-#		$this->_table = NULL;
-#
-#		$this->_set   =
-#		$this->_where = array();
-#
-#		$this->_limit = NULL;
-#
-#		$this->_parameters = array();
-#
-#		$this->_sql = NULL;
-#
-#		return $this;
-#	}
-#
-#
-#} // End Database_Query_Builder_Update
+            query = '%s WHERE %s' % (query, self._compile_conditions(db, self._where))
+
+        if len(self._order_by) > 0:
+            query = '%s %s' % (query, self._compile_order_by(db, self._order_by))
+
+        if self._limit is not None:
+            query = '%s LIMIT %s' % (query, self._limit)
+
+        self._sql = query
+
+        return database_query_builder_where.compile(self, db)
+
+    def reset(self):
+        self._table = None
+
+        self._set = dict()
+        self._where = []
+
+        self._limit = None
+
+        self._parameters = dict()
+
+        self._sql = None
+
+        return self

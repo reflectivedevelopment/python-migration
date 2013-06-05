@@ -77,11 +77,10 @@ def insert(table=None, columns=None):
 #	 * @param   string  $table  table to update
 #	 * @return  Database_Query_Builder_Update
 #	 */
-#	public static function update($table = NULL)
-#	{
-#		return new Database_Query_Builder_Update($table);
-#	}
-#
+def update(table=None):
+    from classes.minion.database.query.builder.update import database_query_builder_update
+    return database_query_builder_update(table)
+
 #	/**
 #	 * Create a new [Database_Query_Builder_Delete].
 #	 *

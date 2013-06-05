@@ -104,9 +104,9 @@ class database_query_builder(database_query):
     def _compile_set(self, db, values):
         set = dict()
 
-        for group in values:
+        for column in values:
             # Split the set
-            (column, value) = group
+            value = values[column]
 
             # Quote the column name
             column = db.quote_column(column)
