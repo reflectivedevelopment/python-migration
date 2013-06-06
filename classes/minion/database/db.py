@@ -106,9 +106,6 @@ def delete(table=None):
 #	 * @param   array   parameters
 #	 * @return  Database_Expression
 #	 */
-#	public static function expr($string, $parameters = array())
-#	{
-#		return new Database_Expression($string, $parameters);
-#	}
-#
-#} // End DB
+def expr(string, parameters = []):
+    from classes.minion.database.expression import database_expression
+    return database_expression(string, parameters)

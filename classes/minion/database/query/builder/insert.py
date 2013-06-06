@@ -6,14 +6,6 @@ from classes.minion.database.base import minion_database_base as database
 # * Database query builder for INSERT statements. See [Query Builder](/database/query/builder) for usage and examples.
 # */
 class database_query_builder_insert(database_query_builder_where):
-#	// INSERT INTO ...
-    _table = None
-
-#	// (...)
-    _columns = []
-#
-#	// VALUES (...)
-    _values = []
 
 #	/**
 #	 * Set the table and columns for an insert.
@@ -23,6 +15,15 @@ class database_query_builder_insert(database_query_builder_where):
 #	 * @return  void
 #	 */
     def __init__(self, table=None, columns=None):
+    #	// INSERT INTO ...
+        self._table = None
+
+    #	// (...)
+        self._columns = []
+    #
+    #	// VALUES (...)
+        self._values = []
+
         if table:
 #			// Set the inital table name
             self._table = table

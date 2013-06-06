@@ -6,11 +6,6 @@ from classes.minion.database.base import minion_database_base as database
 # * Database query builder for UPDATE statements. See [Query Builder](/database/query/builder) for usage and examples.
 # */
 class database_query_builder_update(database_query_builder_where):
-#	// UPDATE ...
-    _table = None
-#
-#	// SET ...
-    _set = dict()
 
 #	/**
 #	 * Set the table for a update.
@@ -19,12 +14,17 @@ class database_query_builder_update(database_query_builder_where):
 #	 * @return  void
 #	 */
     def __init__(self, table = None):
-       if table:
+   #	// UPDATE ...
+        self._table = None
+    #
+    #	// SET ...
+        self._set = dict()
+        if table:
 #                       // Set the inital table name
-           self._table = table
+            self._table = table
 
 #               // Start the query with no SQL
-       database_query_builder_where.__init__(self, database.UPDATE, '')
+        database_query_builder_where.__init__(self, database.UPDATE, '')
 #
 #	/**
 #	 * Sets the table to update.

@@ -336,12 +336,17 @@ class minion_database_base():
     # */
  
     def quote(self, value):
+        from classes.minion.database.expression import database_expression
+
         if value is None:
             return 'NULL'
         elif value == True:
             return '1'
         elif value == False:
             return '0'
+        elif isinstance(value, database_expression):
+#           // Compile the expression
+            return value.compile(self)
 #         elif value == 
 #
 #		elseif (is_object($value))
@@ -394,8 +399,13 @@ class minion_database_base():
     def quote_column(self, column):
         alias = None
 
+        from classes.minion.database.expression import database_expression
+
         if isinstance(column, list):
            column, alias = column
+        elif isinstance(column, database_expression):
+#           // Compile the expression
+            return column.compile(self)
 #		if ($column instanceof Database_Query)
 #		{
 #			// Create a sub-query
@@ -461,8 +471,13 @@ class minion_database_base():
     def quote_table(self, table):
         alias = None
 
+        from classes.minion.database.expression import database_expression
+
         if isinstance(table, (tuple,list)):
             table, alias = table
+        elif isinstance(table, database_expression):
+#           // Compile the expression
+            return table.compile(self)
 
 #		if ($table instanceof Database_Query)
 #		{

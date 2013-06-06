@@ -6,10 +6,6 @@ from classes.minion.database.base import minion_database_base as database
 # *
 # */
 class database_query_builder_delete(database_query_builder_where):
-
-#	// DELETE FROM ...
-    _table = None
-
 #	/**
 #	 * Set the table for a delete.
 #	 *
@@ -17,12 +13,15 @@ class database_query_builder_delete(database_query_builder_where):
 #	 * @return  void
 #	 */
     def __init__(self, table = None):
-       if table:
+    #	// DELETE FROM ...
+        self._table = None
+        
+        if table:
 #			// Set the inital table name
-           self._table = table
+            self._table = table
 
 #		// Start the query with no SQL
-       database_query_builder_where.__init__(self, database.DELETE, '')
+        database_query_builder_where.__init__(self, database.DELETE, '')
 
 #	/**
 #	 * Sets the table to delete from.

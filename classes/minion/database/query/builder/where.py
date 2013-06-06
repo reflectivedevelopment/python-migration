@@ -4,14 +4,18 @@ from classes.minion.database.query.builder import database_query_builder
 # * Database query builder for WHERE statements. See [Query Builder](/database/query/builder) for usage and examples.
 # */
 class database_query_builder_where(database_query_builder):
-    # // WHERE ...
-    _where = []
 
-    # // ORDER BY ...
-    _order_by = []
+    def __init__(self, type=None, sql=''):
+        # // WHERE ...
+        self._where = []
+  
+        # // ORDER BY ...
+        self._order_by = []
 
-    # // LIMIT ...
-    _limit = None
+        # // LIMIT ...
+        self._limit = None
+
+        database_query_builder.__init__(self, type, sql)
 #
 #	/**
 #	 * Alias of and_where()

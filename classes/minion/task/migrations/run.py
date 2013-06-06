@@ -3,6 +3,7 @@ from config import migration as migration_conf
 from classes.minion.database import base as database
 from classes.model.minion.migration import model_minion_migration as migration_model
 from classes.minion.migration.manager import minion_migration_manager as minion_migration_manager
+from classes.minion.migration.exception import minion_migration_exception
 
 #/**
 # * The Run task compares the current version of the database with the target
@@ -105,19 +106,12 @@ class minion_task_migrations_run(minion_task):
 
         # Sync the available migrations with those in the db
         manager.sync_migration_files().set_dry_run(dry_run)
-#
-#		$manager = new Minion_Migration_Manager($db, $model);
-#
-#		$manager
-#			// Sync the available migrations with those in the db
-#			->sync_migration_files()
-#			->set_dry_run($dry_run);
 
-#		try
-#		{
+        try:
 #			// Run migrations for specified groups & versions
-#			$manager->run_migration($groups, $target);
-#		}
+            manager.run_migrations(groups, target)
+        except minion_migration_exception as e:
+            raise e
 #		catch(Minion_Migration_Exception $e)
 #		{
 #			echo View::factory('minion/task/migrations/run/exception')

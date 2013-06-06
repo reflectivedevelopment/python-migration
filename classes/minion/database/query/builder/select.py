@@ -7,15 +7,6 @@ from classes.minion.database.base import minion_database_base as database
 # */
 
 class database_query_builder_select(database_query_builder_where):
-    _select = []
-    _distinct = False
-    _from = []
-    _join = []
-    _group_by = []
-    _having = []
-    _offset = None
-    _union = []
-    _last_join = None
 
 #	/**
 #	 * Sets the initial columns to select from.
@@ -24,6 +15,16 @@ class database_query_builder_select(database_query_builder_where):
 #	 * @return  void
 #	 */
     def __init__(self, columns = None):
+        self._select = []
+        self._distinct = False
+        self._from = []
+        self._join = []
+        self._group_by = []
+        self._having = []
+        self._offset = None
+        self._union = []
+        self._last_join = None
+
         if columns is not None and len(columns) > 0:
             # Set the initial columns
             self._select = columns

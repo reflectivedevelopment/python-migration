@@ -1,6 +1,9 @@
+from classes.minion.database import base
+
 #/**
 # * Database query wrapper.  See [Parameterized Statements](database/query/parameterized) for usage and examples.
 # */
+
 import re
 
 def strtr(s, repl):
@@ -183,11 +186,9 @@ class database_query():
 #	 * @return  integer  number of affected rows for all other queries
 #	 */
     def execute(self, db=None, as_object=None, object_params=None):
-#		if ( ! is_object($db))
-#		{
+        if not isinstance(db, (base.minion_database_base)):
 #			// Get the database instance
-#			$db = Database::instance($db);
-#		}
+            db = base.instance(db)
 
 #		if ($as_object === NULL)
 #		{

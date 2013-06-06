@@ -11,36 +11,6 @@ from classes.minion.database.base import instance as database
 # */
 
 class minion_migration_manager():
-
-    #/**
-    # * The database connection that sould be used
-    # * @var Kohana_Database
-    # */
-    _db = None
-
-    #/**
-    # * Model used to interact with the migrations table in the database
-    # * @var Model_Minion_Migration
-    # */
-    _model = None
-
-    #/**
-    # * Whether this is a dry run migration
-    # * @var boolean
-    # */
-    _dry_run = False
-
-    #/**
-    # * A set of SQL queries that were generated on the dry run
-    # * @var array
-    # */
-    _dry_run_sql = {}
-
-    #/**
-    # * Set of migrations that were executed
-    # */
-    _executed_migrations = {}
-
     #/**
     # * Constructs the object, allows injection of a Database connection
     # *
@@ -48,6 +18,36 @@ class minion_migration_manager():
     # * @param Model_Minion_Migration Inject an instance of the minion model into the manager
     # */
     def __init__(self, db, model=None):
+
+        #/**
+        # * The database connection that sould be used
+        # * @var Kohana_Database
+        # */
+        self._db = None
+
+        #/**
+        # * Model used to interact with the migrations table in the database
+        # * @var Model_Minion_Migration
+        # */
+        self._model = None
+
+        #/**
+        # * Whether this is a dry run migration
+        # * @var boolean
+        # */
+        self._dry_run = False
+
+        #/**
+        # * A set of SQL queries that were generated on the dry run
+        # * @var array
+        # */
+        self._dry_run_sql = {}
+
+        #/**
+        # * Set of migrations that were executed
+        # */
+        self._executed_migrations = {}
+
         if model is None:
             model = migration_model(db)
 
@@ -110,7 +110,7 @@ class minion_migration_manager():
     # * @param  array   Versions for specified groups
     # * @return array   Array of all migrations that were successfully applied
     # */
-    def run_migration(self, group={}, target=True):
+    def run_migrations(self, group={}, target=True):
         (migrations, is_up) = self._model.fetch_required_migrations(group, target)
 
         method = 'up' if is_up else 'down'
@@ -180,45 +180,30 @@ class minion_migration_manager():
     # * @return Minion_Migration_Manager Chainable instance
     # */
     def sync_migration_files(self):
+#		// Get array of installed migrations with the id as key
         installed = self._model.fetch_all('id')
+
+        available = self._model.available_migrations()
+
+        all_migrations = installed.keys() + available.keys()
+
+        for migration in all_migrations:
+#			// If this migration has since been deleted
+            if installed.has_key(migration) and (not available.has_key(migration)):
+#				// We should only delete a record of this migration if it does
+#				// not exist in the "real world"
+                if installed[migration]['applied'] == 0:
+                    self._model.delete_migration(installed[migration])
+#			// If the migration has not yet been installed :D
+            elif (not installed.has_key(migration)) and available.has_key(migration):
+                self._model.add_migration(available[migration])
+#			// Somebody changed the description of the migration, make sure we
+#			// update it in the db as we use this to build the filename!
+            elif installed[migration]['description'] != available[migration]['description']:
+                self._model.update_migration(installed[migration], available[migration])
 
         return self
     
-#		// Get array of installed migrations with the id as key
-#		$installed = $this->_model->fetch_all('id');
-#
-#		$available = $this->_model->available_migrations();
-#
-#		$all_migrations = array_merge(array_keys($installed), array_keys($available));
-#
-#		foreach ($all_migrations as $migration)
-#		{
-#			// If this migration has since been deleted
-#			if (isset($installed[$migration]) AND ! isset($available[$migration]))
-#			{
-#				// We should only delete a record of this migration if it does
-#				// not exist in the "real world"
-#				if ($installed[$migration]['applied'] === '0')
-#				{
-#					$this->_model->delete_migration($installed[$migration]);
-#				}
-#			}
-#			// If the migration has not yet been installed :D
-#			elseif ( ! isset($installed[$migration]) AND isset($available[$migration]))
-#			{
-#				$this->_model->add_migration($available[$migration]);
-#			}
-#			// Somebody changed the description of the migration, make sure we
-#			// update it in the db as we use this to build the filename!
-#			elseif ($installed[$migration]['description'] !== $available[$migration]['description'])
-#			{
-#				$this->_model->update_migration($installed[$migration], $available[$migration]);
-#			}
-#		}
-#
-#		return $this;
-#	}
-
     #/**
     # * Gets a database connection for running the migrations
     # *
