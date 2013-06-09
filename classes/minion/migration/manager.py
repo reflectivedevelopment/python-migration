@@ -46,7 +46,7 @@ class minion_migration_manager():
         #/**
         # * Set of migrations that were executed
         # */
-        self._executed_migrations = {}
+        self._executed_migrations = []
 
         if model is None:
             model = migration_model(db)
@@ -113,11 +113,7 @@ class minion_migration_manager():
     def run_migrations(self, group={}, target=True):
         (migrations, is_up) = self._model.fetch_required_migrations(group, target)
 
-        print migrations
-
         method = 'up' if is_up else 'down'
-
-        print method
 
         for migration in migrations:
             # Config allows limiting how low you go. TODO

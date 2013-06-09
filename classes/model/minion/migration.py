@@ -311,17 +311,9 @@ class model_minion_migration():
     # * @return Model_Minion_Migration
     # */
     def mark_migration(self, migration, applied):
-        raise NotImplementedError("TODO")
-#	public function mark_migration(array $migration, $applied)
-#	{
-#		DB::update($this->_table)
-#			->set(array('applied' => (int) $applied))
-#			->where('timestamp', '=', $migration['timestamp'])
-#			->where('group',  '=', $migration['group'])
-#			->execute($this->_db);
-#
-#		return $this;
-#	}
+        db.update(self._table).set({'applied': int(applied)}).where('timestamp', '=', migration['timestamp']).where('group', '=', migration['group']).execute()
+
+        return self
 
     #/**
     # * Selects all migrations from the migratinos table
