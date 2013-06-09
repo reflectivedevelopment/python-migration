@@ -113,7 +113,11 @@ class minion_migration_manager():
     def run_migrations(self, group={}, target=True):
         (migrations, is_up) = self._model.fetch_required_migrations(group, target)
 
+        print migrations
+
         method = 'up' if is_up else 'down'
+
+        print method
 
         for migration in migrations:
             # Config allows limiting how low you go. TODO
@@ -129,49 +133,28 @@ class minion_migration_manager():
 
             filename = self._model.get_filename_from_migration(migration)
 
-            print filename
-#			$filename  = $this->_model->get_filename_from_migration($migration);
-#
-#			if ( ! ($file  = Kohana::find_file('migrations', $filename, FALSE)))
-#			{
-#				throw new Kohana_Exception(
-#					'Cannot load migration :migration (:file)',
-#					array(
-#						':migration' => $migration['id'],
-#						':file'      => $filename
-#					)
-#				);
-#			}
-#
-#			$class = $this->_model->get_class_from_migration($migration);
-#
-#			include_once $file;
-#
-#			$instance = new $class($migration);
-#
-#			$db = $this->_get_db_instance($instance->get_database_connection());
-#
-#			try
-#			{
-#				$instance->$method($db);
-#			}
-#			catch(Database_Exception $e)
-#			{
+            include_name = self._model.get_class_from_migration(migration)
+
+            instance = __import__(include_name, fromlist=[include_name])
+
+            instance_migration = instance.migration(migration)
+
+            db = self._get_db_instance(instance_migration.get_database_connection())
+
+            try:
+                instance_func = getattr(instance_migration, method)
+
+                instance_func(db)
+            except Exception as e:
+                raise e
 #				throw new Minion_Migration_Exception($e->getMessage(), $migration);
-#			}
-#
-#			if ($this->_dry_run)
-#			{
-#				$this->_dry_run_sql[$migration['group']][$migration['timestamp']] = $db->reset_query_stack();
-#			}
-#			else
-#			{
-#				$this->_model->mark_migration($migration, $is_up);
-#			}
-#
-#			$this->_executed_migrations[] = $migration;
-#		}
-#	}
+
+            if self._dry_run:
+                self._dry_run_sql[migration['group']][migration['timestamp']] = db.reset_query_stack()
+            else:
+                self._model.mark_migration(migration, is_up)
+
+            self._executed_migrations.append(migration)
 
     #/**
     # * Syncs all available migration files with the database

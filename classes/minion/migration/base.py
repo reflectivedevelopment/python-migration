@@ -1,4 +1,5 @@
 from config import migration
+from classes.minion.database.base import minion_database_base as db
 
 #
 # The base migration class, must be extended by all migration files
@@ -10,13 +11,12 @@ from config import migration
 # Abstract Class
 class minion_migration_base():
 
-    # array of information about this migration
-    _info = dict()
-
     # construct the migration
 
     # param array Information about this migration
     def __init__(self, info):
+        self._info = dict()
+
         self._info = info
 
     # get the name of the database connection group this migration should be run against
@@ -29,7 +29,7 @@ class minion_migration_base():
         if config.has_key(group):
             return config[group]
 
-        raise Exception("No database was selected, and no defaults exist!")
+        return db.default
 
     # Runs an SQL queries necessary to bring the database up a migration version
 

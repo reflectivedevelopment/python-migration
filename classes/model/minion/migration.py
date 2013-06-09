@@ -40,6 +40,8 @@ class model_minion_migration():
             dir = group[0]
             for filegroup in group[1:]:
                 for file in filegroup:
+                    if file.endswith('__init__.py'):
+                        continue
                     if file.endswith('.py'):
                         new_file = os.path.join(dir,file)
                         migration = self.get_migration_from_filename(new_file)
@@ -100,9 +102,9 @@ class model_minion_migration():
             migration = '%s' % migration['timestamp']
 
         if len(group) > 0:
-            migration = '%s.%s' % (group, migration)
+            migration = '%s/%s' % (group, migration)
 
-#		return $group.$migration.EXT;
+        migration = '%s/%s' % ('migrations', migration)
 
         return migration
 
@@ -114,8 +116,10 @@ class model_minion_migration():
     # * @return string       The migration class name
     # */
     def get_class_from_migration(self, migration):
-        # Not sure what is going on here
-        raise NotImplementedError("TODO")
+        if not isinstance(migration, str):
+            migration = self.get_filename_from_migration(migration)
+
+        return migration.replace('/', '.')
 
 #	public function get_class_from_migration($migration)
 #	{
@@ -358,15 +362,11 @@ class model_minion_migration():
     # * @return array
     # */
     def fetch_groups(self, group_as_key=False):
-        raise NotImplementedError("TODO")
-#	public function fetch_groups($group_as_key = FALSE)
-#	{
-#		return DB::select()
-#			->from($this->_table)
-#			->group_by('group')
-#			->execute($this->_db)
-#			->as_array($group_as_key ? 'group' : NULL, 'group');
-#	}
+        group = None,
+        if group_as_key:
+            group = 'group'
+
+        return db.select().from_table(self._table).group_by('group').execute(self._db).as_array(group, 'group')
 
     #/**
     # * Fetch a list of migrations that need to be applied in order to reach the
@@ -376,96 +376,58 @@ class model_minion_migration():
     # * @param mixed   Target version
     # */
     def fetch_required_migrations(self, group, target=True):
-        print dir(self._db)
-        raise NotImplementedError("TODO")
-#	public function fetch_required_migrations(array $group, $target = TRUE)
-#	{
-#		$migrations     = array();
-#		$current_groups = $this->fetch_groups(TRUE);
-#
-#		// Make sure the group(s) exist
-#		foreach ($group as $group_name)
-#		{
-#			if ( ! isset($current_groups[$group_name]))
-#			{
-#				throw new Kohana_Exception("Migration group :group does not exist", array(':group' => $group_name));
-#			}
-#		}
-#
-#		$query = $this->_select();
-#
-#		if (is_bool($target))
-#		{
-#			$up = $target;
-#
+        migrations = []
+        current_groups = self.fetch_groups(True)
+
+        for group_name in group:
+            if not current_groups.has_key(group_name):
+                raise Exception('Migration group %s does not exist' % group_name)
+
+        query = self._select()
+
+        if isinstance(target, (bool)):
+            up = target
+
 #			// If we want to limit this migration to certain groups
-#			if ( ! empty($group))
-#			{
-#				if (count($group) > 1)
-#				{
-#					$query->where('group', 'IN', $group);
-#				}
-#				else
-#				{
-#					$query->where('group', '=', $group[0]);
-#				}
-#			}
-#		}
+            if len(group) > 0:
+                if len(group) > 1:
+                    query.where('group', 'IN', group)
+                else:
+                    query.where('group', '=', group[0])
 #		// Relative up/down target
-#		elseif (in_array($target[0], array('+', '-')))
-#		{
-#			list($target, $up) = $this->resolve_target($group, $target);
-#
-#			$query->where('group', '=', $group);
-#
-#			if( $target !== NULL)
-#			{
-#				if ($up)
-#				{
-#					$query->where('timestamp', '<=', $target);
-#				}
-#				else
-#				{
-#					$query->where('timestamp', '>=', $target);
-#				}
-#			}
-#
-#		}
+        elif target[0] in ['+', '-']:
+            target, up = self.resolve_target(group, target)
+
+            query.where('group', '=', group)
+
+            if target is not None:
+                if up:
+                    query.where('timestamp', '<=', target)
+                else:
+                    query.where('timestamp', '>=', target)     
 #		// Absolute timestamp
-#		else
-#		{
-#			$query->where('group', '=', $group);
-#
-#			$statuses = $this->fetch_current_versions('group', 'timestamp');
-#			$up = (empty($statuses) OR ($statuses[$group[0]] < $target));
-#
-#			if ($up)
-#			{
-#				$query->where('timestamp', '<=', $target);
-#			}
-#			else
-#			{
-#				$query->where('timestamp', '>', $target);
-#			}
-#		}
-#
+        else:
+            query.where('group', '=', group)
+
+            statuses = self.fetch_current_versions('group', 'timestamp')
+
+            up = False
+            if len(statuses) == 0 or statuses[group[0]] < target:
+                up = True
+
+            if up:
+                query.where('timestamp', '<=', target)
+            else:
+                query.where('timestamp', '>', target)
+
 #		// If we're migrating up
-#		if ($up)
-#		{
-#			$query
-#				->where('applied', '=', 0)
-#				->order_by('timestamp', 'ASC');
-#		}
+        if up:
+            query.where('applied', '=', 0).order_by('timestamp', 'ASC')
+        else:
 #		// If we're migrating down
-#		else
-#		{
-#			$query
-#				->where('applied', '=', 1)
-#				->order_by('timestamp', 'DESC');
-#		}
-#
-#		return array($query->execute($this->_db)->as_array(), $up);
-#	}
+            query.where('applied', '=', 1).order_by('timestamp', 'DESC')
+
+        return [query.execute(self._db).as_array(), up]
 
     #/**
     # * Resolve a (potentially relative) target for a group to a definite timestamp

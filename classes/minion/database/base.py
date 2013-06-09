@@ -21,7 +21,7 @@ def instance(name = None, config = None):
 
         # Create database connection instance
         try:
-            db_module = __import__( 'classes.minion.database.%s' % config['type'], fromlist=['classes.minion.database'])
+            db_module = __import__( 'classes.minion.database.%s' % config['type'], fromlist=['classes.minion.database.%s' % config['type']])
         except:
             raise Exception("Unable to load database type.")
         return db_module.instance(name=name, config=config);
