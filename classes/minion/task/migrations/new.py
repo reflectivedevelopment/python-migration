@@ -146,7 +146,7 @@ class migration(minion_migration_base):
 #		// Max 100 characters, lowecase filenames.
         label = description[0:100]
 #		// Only letters
-        label = re.sub('[^A-Za-z]+', '-', label)
+        label = re.sub('[^A-Za-z]+', '_', label)
 #		// Add the location, group, and time
         filename = os.path.join(location, group, '%s_%s' % (time, label))
 #		// If description was empty, trim underscores
@@ -160,8 +160,8 @@ class migration(minion_migration_base):
         if len(group) <= 0:
             return False
 
-#		// Can only consist of alpha-numeric values, dashes, underscores, and slashes
-        if re.search('[^a-zA-Z0-9\/_-]', group):
+#		// Can only consist of alpha-numeric values, underscores, and slashes
+        if re.search('[^a-zA-Z0-9\/_]', group):
             return False
 
 #		// Must also contain at least one alpha-numeric value
