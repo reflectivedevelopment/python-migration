@@ -77,6 +77,7 @@ class model_minion_migration():
 
         if path_split[1].find('_') != -1:
             parts = path_split[1].split('_')
+            parts[1] = '_'.join(parts[1:])
             migration['timestamp'] = parts[0]
             migration['description'] = parts[1].split('.')[0]
         else:
